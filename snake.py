@@ -5,16 +5,28 @@ import random
 
 SIZE = 40
 
+# a = range(199)
+# [fn(x) for x in a if condition(x)]
+
+
+class CollisionException(Exception):
+    pass
 
 class Game:
+
+    def initialize(self):
+        pygame.init()
+        pygame.display.set_caption("Jordii's Snake")
+        self.snake.draw()
+        self.apple.draw()
+
     def __init__ (self):
         pygame.init()
         pygame.display.set_caption("Jordii's Snake")
         self.screen = pygame.display.set_mode((1000,800))
-        self.long = 1
         self.snake = mySnake(self.screen, 1)
-        self.snake.draw()
         self.apple = myApple(self.screen)
+        self.snake.draw()
         self.apple.draw()
 
     def render_background(self):
@@ -35,15 +47,16 @@ class Game:
         #collision: snake
         for i in range(2, self.snake.length):
             if self.is_collision(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
-                raise "Collision with yourself!"
+                raise CollisionException("Collision with yourself!")
         
                 #when out of bounds, tp to other side
         if not (0 <= self.snake.x[0] <= 1000 and 0 <= self.snake.y[0] <= 800):
-            raise "Collision with boundaries"
+            raise CollisionException("Collision with boundaries")
 
     def run(self):
         running = True
         pause = False
+        # https://peps.python.org/pep-0636/
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT: running = False
@@ -65,12 +78,13 @@ class Game:
             try:
                 if not pause:
                     self.play()
-            except Exception as e:
+            except CollisionException as e:
+                print(f"Collision found {e}")
                 self.display_game_over()
                 pause = True
                 self.reset()
             
-            time.sleep(0.05)
+            time.sleep(0.25)
     
     def is_collision(self, x1, y1, x2, y2):
         if x1 >= x2 and x1 < x2 + SIZE:
@@ -107,6 +121,8 @@ class mySnake:
         self.x = [SIZE] * length
         self.y = [SIZE] * length
         self.direction = 'right'
+        
+    
     
     def draw(self):
         for i in range(self.length):
@@ -133,10 +149,14 @@ class mySnake:
             self.x[i] = self.x[i-1]
             self.y[i] = self.y[i-1]
         
-        if self.direction == 'up': self.y[0] -= SIZE
-        if self.direction == 'down': self.y[0] += SIZE
-        if self.direction == 'left': self.x[0] -= SIZE
-        if self.direction == 'right': self.x[0] += SIZE
+        if self.direction == 'up': 
+            self.y[0] -= SIZE
+        if self.direction == 'down': 
+            self.y[0] += SIZE
+        if self.direction == 'left': 
+            self.x[0] -= SIZE
+        if self.direction == 'right': 
+            self.x[0] += SIZE
 
         self.draw()
 
@@ -158,6 +178,7 @@ class myApple:
 if __name__ == '__main__':
     game = Game()
     game.run()
+
 
     #disseny serp. que miri sempre en la direccio
     #efectes de sonido
